@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Subject-Verb Agreement – Set 10</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #ffecd2, #fcb69f);
+      text-align: center;
+      padding: 20px;
+      color: #333;
+    }
+    h1 { font-size: 2em; }
+    .question-number { margin: 10px; font-weight: bold; }
+    .question { font-size: 1.3em; margin: 15px 0; }
+    .answer-option {
+      display: block;
+      margin: 10px auto;
+      padding: 12px;
+      width: 70%;
+      max-width: 400px;
+      background: #fff;
+      border: 2px solid #555;
+      border-radius: 6px;
+      font-size: 1.1em;
+      cursor: pointer;
+      position: relative;
+    }
+    .answer-option:hover { background: #f0f0f0; }
+    .correct-answer {
+      background: #d4edda;
+      border-color: #28a745;
+    }
+    .wrong-answer {
+      background: #f8d7da;
+      border-color: #dc3545;
+    }
+    .correct-answer::after {
+      content: "✔️";
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      font-size: 1.4em;
+    }
+    .wrong-answer::after {
+      content: "❌";
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      font-size: 1.4em;
+    }
+    .next-button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+    }
+    .score { margin-top: 15px; font-size: 1.2em; }
+    .gif-image { width: 200px; margin-top: 10px; }
+    .toggle-container { margin-top: 25px; }
+    .music-toggle { width: 60px; height: 30px; }
+    .explanation { font-style: italic; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>Subject-Verb Agreement – Set 10</h1>
+<div id="question-number" class="question-number"></div>
+<div id="question" class="question"></div>
+<div id="answers"></div>
+<button class="next-button" id="next-button" onclick="nextQuestion()" style="display:none;">Next</button>
+<div id="score" class="score"></div>
+<div class="explanation" id="explanation"></div>
+<img id="gif" class="gif-image" src="" alt="Feedback GIF">
+
+<div class="toggle-container">
+  <label for="music-toggle">🎵 Background Music:</label>
+  <input type="checkbox" id="music-toggle" class="music-toggle" onchange="toggleMusic()">
+</div>
+
+<!-- Audio -->
+<audio id="bg-music" loop>
+  <source src="https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3" type="audio/mp3">
+</audio>
+<audio id="correct-sound">
+  <source src="https://www.soundjay.com/buttons/sounds/button-4.mp3" type="audio/mp3">
+</audio>
+<audio id="wrong-sound">
+  <source src="https://www.soundjay.com/buttons/sounds/button-10.mp3" type="audio/mp3">
+</audio>
+
+<script>
+const questions = [
+  {
+    question: "Either the manager or the employees ____ attending the seminar.",
+    options: ["are", "is", "was"],
+    correct: "are",
+    explanation: "Verb agrees with 'employees' (closest noun, plural)."
+  },
+  {
+    question: "Not only the teacher but also the students ____ excited.",
+    options: ["is", "are", "was"],
+    correct: "are",
+    explanation: "Verb agrees with 'students' (plural, nearest noun)."
+  },
+  {
+    question: "Here ____ the list of items you requested.",
+    options: ["is", "are", "were"],
+    correct: "is",
+    explanation: "Inverted structure; subject is 'list' (singular)."
+  },
+  {
+    question: "There ____ a few challenges in this project.",
+    options: ["is", "are", "has"],
+    correct: "are",
+    explanation: "'Challenges' is plural, so use 'are'."
+  },
+  {
+    question: "No one ____ responsible for the accident.",
+    options: ["are", "is", "were"],
+    correct: "is",
+    explanation: "'No one' is singular, so use 'is'."
+  },
+  {
+    question: "More than one applicant ____ qualified.",
+    options: ["is", "are", "have"],
+    correct: "is",
+    explanation: "Despite sounding plural, 'More than one' takes 'is'."
+  },
+  {
+    question: "Fifty percent of the cake ____ eaten.",
+    options: ["was", "were", "are"],
+    correct: "was",
+    explanation: "'Cake' is uncountable, so treat as singular: 'was'."
+  },
+  {
+    question: "The team, as well as the coach, ____ celebrating.",
+    options: ["is", "are", "have"],
+    correct: "is",
+    explanation: "Main subject is 'The team', singular."
+  },
+  {
+    question: "None of the information ____ reliable.",
+    options: ["are", "is", "have"],
+    correct: "is",
+    explanation: "‘Information’ is uncountable, so singular verb 'is'."
+  },
+  {
+    question: "Two-thirds of the students ____ passed the exam.",
+    options: ["has", "have", "is"],
+    correct: "have",
+    explanation: "'Students' is plural, so 'have' is correct."
+  }
+];
+
+const correctGif = "https://media.giphy.com/media/3oEduX6Z7t6MjtWq5G/giphy.gif"; // Happy cheer
+const wrongGif = "https://media.giphy.com/media/3o6Zt6ML6BklcajjsA/giphy.gif"; // Funny fail
+
+let current = 0;
+let score = 0;
+
+function loadQuestion() {
+  const q = questions[current];
+  document.getElementById("question-number").textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById("question").textContent = q.question;
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+
+  q.options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "answer-option";
+    btn.textContent = opt;
+    btn.onclick = () => checkAnswer(opt);
+    answersDiv.appendChild(btn);
+  });
+
+  document.getElementById("gif").src = "";
+  document.getElementById("explanation").textContent = "";
+}
+
+function checkAnswer(selected) {
+  const q = questions[current];
+  const correct = q.correct;
+  const options = document.getElementsByClassName("answer-option");
+  const gif = document.getElementById("gif");
+
+  for (let btn of options) {
+    btn.disabled = true;
+    if (btn.textContent === correct) {
+      btn.classList.add("correct-answer");
+    } else if (btn.textContent === selected) {
+      btn.classList.add("wrong-answer");
+    }
+  }
+
+  if (selected === correct) {
+    document.getElementById("correct-sound").play();
+    gif.src = correctGif;
+    score++;
+  } else {
+    document.getElementById("wrong-sound").play();
+    gif.src = wrongGif;
+  }
+
+  document.getElementById("score").textContent = `Score: ${score}`;
+  document.getElementById("explanation").textContent = q.explanation;
+  document.getElementById("next-button").style.display = "inline-block";
+}
+
+function nextQuestion() {
+  current++;
+  if (current < questions.length) {
+    loadQuestion();
+    document.getElementById("next-button").style.display = "none";
+  } else {
+    document.getElementById("score").textContent = `Final Score: ${score} / ${questions.length}`;
+    document.getElementById("question").textContent = "Quiz Complete!";
+    document.getElementById("answers").innerHTML = "";
+    document.getElementById("question-number").textContent = "";
+    document.getElementById("next-button").style.display = "none";
+  }
+}
+
+function toggleMusic() {
+  const music = document.getElementById("bg-music");
+  const toggle = document.getElementById("music-toggle");
+  toggle.checked ? music.play() : music.pause();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
